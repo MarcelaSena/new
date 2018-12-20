@@ -1,0 +1,269 @@
+<html ng-app="AngularApp">
+
+<head>
+    <title>Minha página AngularJS</title>
+    <meta charset="utf-8" />
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/escola.css">
+
+    <!-- BootStrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+    <!-- AngularJS -->
+    <script src="js/angular-1.7.5/angular.min.js" type="text/javascript"></script>
+
+    <!-- ui.router -->
+    <script src="https://unpkg.com/@uirouter/angularjs@1.0.20/release/angular-ui-router.min.js" type="text/javascript"></script>
+
+    <script>
+        var escolaApp = angular.module("AngularApp", ["ui.router"]);
+        var baseUrl = "http://mobile-aceite.tcu.gov.br:80/nossaEscolaRS";
+        
+        
+        
+        // Factory - API
+        var escolaApi = function($http) {
+            var _getEscolas = function(quantidadeDeItens) {
+                return $http.get(baseUrl + "/rest/escolas?quantidadeDeItens=" +
+                    quantidadeDeItens);
+            };
+            var _getEscola = function(codEscola) {
+                return $http.get(baseUrl + "/rest/escolas/" + codEscola);
+            };
+            var _getAvaliacoes = function() {
+                return $http.get(baseUrl + "/rest/tiposavaliacao");
+            };
+            var _getAvaliacaoAno = function(codEscola, ano) {
+                return $http.get(baseUrl + "/rest/escolas/" + codEscola + "/avaliacoes/ano/" + ano);
+            };
+            
+            var _getAvaliacaoEscola = function(codEscola) {
+                return $http.get(baseUrl + "/rest/escolas/" + codEscola + "/avaliacoes");
+            };
+            
+            var _getAvaliacaoMedia = function(codEscola) {
+                return $http.get(baseUrl + "/rest/escolas/" + codEscola + "/avaliacoes/media");
+            };
+            var _getListarAvaliacaoEsc = function(codEscola, tipo) {
+                return $http.get(baseUrl + "/rest/escolas/" + codEscola + "/avaliacoes/tipo/" + tipo);
+
+            };
+            
+
+            return {
+                getAvaliacaoAno: _getAvaliacaoAno,
+                getEscolas: _getEscolas,
+                getEscola: _getEscola,
+                getAvaliacoes: _getAvaliacoes,
+                getAvaliacaoEscola: _getAvaliacaoEscola,
+                getAvaliacaoMedia: _getAvaliacaoMedia,
+                getListarAvaliacaoEsc: _getListarAvaliacaoEsc
+            };
+        }
+
+        // Factory de Avaliação
+        var tiposAvaliacaoApi = function($http) {
+            var _getTiposAvaliacao = function(quantidadeDeItens) {
+                return $http.get(baseUrl + "/rest/tiposavaliacao");
+            };
+            
+            return {
+                getTiposAvaliacao: _getTiposAvaliacao,
+            };
+        }
+
+        escolaApp.factory("escolaApi", escolaApi);
+        escolaApp.factory("tiposAvaliacaoApi", tiposAvaliacaoApi);
+
+        // Controllers a seguir:
+        
+        
+
+        //Listar Escolas
+        var listarEscolaCtrl = function($scope, escolaApi) {
+            $scope.escolas = [];
+            $scope.quantidades = [10, 20, 30, 40, 50, 100];
+            $scope.listarEscola = function(quantidade) {
+                escolaApi.getEscolas(quantidade)
+                    .then(function(response) {
+                        $scope.escolas = response.data;
+                    })
+                    .catch(function(error) {
+                        console.error(error);
+                    });
+            }
+        };
+
+        //Pesquisar Escola por Código
+        var pesquisarEscolaCtrl = function($scope, escolaApi) {
+            $scope.escola = {};
+            $scope.pesquisarEscola = function(codEscola) {
+                escolaApi.getEscola(codEscola)
+                    .then(function(response) {
+                        $scope.escola = response.data;
+                    })
+                    .catch(function(error) {
+                        console.error(error);
+                    });
+            }
+        };
+
+        //Listar Tipos de Avaliação
+        var listarTiposAvaliacaoCtrl = function($scope, tiposAvaliacaoApi) {
+            $scope.tiposAvaliacao = [];
+            $scope.listar = function() {
+                tiposAvaliacaoApi.getTiposAvaliacao()
+                    .then(function(response) {
+                        $scope.tiposAvaliacao = response.data;
+                    })
+                    .catch(function(error) {
+                        console.error(error);
+                    });
+            }
+        };
+
+
+        //Avaliação Do Ano
+        var pesquisarAvaliacaoAnoCtrl = function($scope, escolaApi) {
+            $scope.avaliacaosDoAno = [];
+            $scope.pesquisarAvaliacaoAno = function(codEscola, ano) {
+                escolaApi.getAvaliacaoAno(codEscola, ano)
+                    .then(function(response) {
+                        $scope.avaliacaosDoAno = response.data;
+                    })
+                    .catch(function(error) {
+                        console.error(error);
+                    });
+            }
+        };
+       
+
+        var pesquisarAvaliacaoEscolaCtrl = function($scope, escolaApi) {
+            $scope.escolas = {};
+            $scope.pesquisarAvaliacaoEscola = function(codEscola) {
+                escolaApi.getAvaliacaoEscola(codEscola)
+                    .then(function(response) {
+                        $scope.escolas = response.data;
+                    })
+                    .catch(function(error) {
+                        console.error(error);
+                    });
+            }
+        };
+
+        var pesquisarMediaCtrl = function($scope, escolaApi) {
+            $scope.escola = {};
+            $scope.pesquisarMedia = function(codEscola) {
+                escolaApi.getAvaliacaoMedia(codEscola)
+                    .then(function(response) {
+                        $scope.escola = response.data;
+                    })
+                    .catch(function(error) {
+                        console.error(error);
+                    });
+            }
+        };
+
+        var listarAvaliacaoEscCtrl = function($scope, escolaApi) {
+            $scope.escolas = {}; //jason
+            $scope.listarAvaliacaoEsc = function(codEscola, tipo) {
+                escolaApi.getListarAvaliacaoEsc(codEscola, tipo)
+                    .then(function(response) {
+                        $scope.escolas = response.data;
+                    })
+                    .catch(function(error) {
+                        console.error(error);
+                    });
+            }
+        };
+
+        
+        escolaApp.controller("listarAvaliacaoEscCtrl", listarAvaliacaoEscCtrl);
+        escolaApp.controller("PesquisarMediaCtrl", pesquisarMediaCtrl);
+        escolaApp.controller("PesquisarAvaliacaoEscolaCtrl", pesquisarAvaliacaoEscolaCtrl);
+        escolaApp.controller("PesquisarAvaliacaoAnoCtrl", pesquisarAvaliacaoAnoCtrl);
+        escolaApp.controller("ListarTiposAvaliacaoCtrl", listarTiposAvaliacaoCtrl);
+        escolaApp.controller("ListarEscolaCtrl", listarEscolaCtrl);
+        escolaApp.controller("PesquisarEscolaCtrl", pesquisarEscolaCtrl);
+
+        // Navegação.
+        escolaApp.config(function($stateProvider, $urlRouterProvider) {
+            $urlRouterProvider.otherwise('/home');
+            $stateProvider
+                .state('home', {
+                    url: '/home',
+                    templateUrl: 'home.html'
+                })
+                .state('listar', {
+                    url: '/listar',
+                    templateUrl: 'listarEscolas.html',
+                    controller: 'ListarEscolaCtrl'
+                })
+                .state('pesquisar', {
+                    url: '/pesquisar',
+                    templateUrl: 'pesquisarEscolas.html',
+                    controller: 'PesquisarEscolaCtrl'
+                })
+                .state('tiposavaliacao', {
+                    url: '/tiposavaliacao',
+                    templateUrl: 'listarTipoAvaliacao.html',
+                    controller: 'ListarTiposAvaliacaoCtrl'
+                })
+                .state('avaliacaosDoAno', {
+                    url: '/avaliacaosDoAno',
+                    templateUrl: 'avaliacaoAno.html',
+                    controller: 'PesquisarAvaliacaoAnoCtrl'
+                })
+                .state('avaliacaoPorEscola', {
+                    url: '/AvaliacaoEscola',
+                    templateUrl: 'pesquisarAvaliacaoEscola.html',
+                    controller: 'PesquisarAvaliacaoEscolaCtrl'
+                })
+                .state('AvaliacaoPorMedia', {
+                    url: '/AvaliacaoMedia',
+                    templateUrl: 'avaliacaoMedia.html',
+                    controller: 'PesquisarMediaCtrl'
+                })
+                .state('PesquisarAvaliacaoPorEscola', {
+                    url: '/PesquisarAvaliacaoEscola',
+                    templateUrl: 'avaliacaoEscola.html',
+                    controller: 'listarAvaliacaoEscCtrl'
+                })
+        });
+
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <nav class="navbar navbar-light bg-light">
+                <div class="navbar-header">
+                    <a class="navbar-brand" ui-sref="#">Escolas - TCU Cívico</a>
+                </div>
+                <ul class="nav navbar-nav">
+                    <li><a ui-sref="home">Home</a></li>
+                    <li><a ui-sref="listar">Listar Escolas</a></li>
+                    <li><a ui-sref="pesquisar">Pesquisar Escolas</a></li>
+                    <li><a ui-sref="avaliacaosDoAno">Avaliação do Ano</a></li>
+                    <li><a ui-sref="avaliacaoPorEscola">Avaliação Por Escola</a></li>
+                    <li><a ui-sref="AvaliacaoPorMedia">Avalição Por Média</a></li>
+                    <li><a ui-sref="tiposavaliacao">Listar Tipos de Avaliação</a></li>
+                    <li><a ui-sref="PesquisarAvaliacaoPorEscola">Pesquisar Avaliação Por Escola</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+            <div ui-view=""></div>
+        </main>
+
+        <footer>
+            Dados - TCU
+        </footer>
+    </div>
+</body>
+
+</html>
